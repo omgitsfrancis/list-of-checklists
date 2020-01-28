@@ -20,14 +20,14 @@ const AddNewListInput = styled.input`
 const ListContainer = styled.div`
   border: solid 2px red;
   width: 70%;
-`
+`;
 
 function App() {
   const [lists, setLists] = useState([]);
   const [currentList, setCurrentList] = useState(
     lists.length > 0 ? lists[0] : null
   );
-  const [currentListData, setCurrentListData] = useState([])
+  const [currentListData, setCurrentListData] = useState([]);
   const [newListInputValue, setNewListInputValue] = useState("");
 
   useEffect(() => {
@@ -48,7 +48,16 @@ function App() {
   }, []);
 
   const handleSideNavItemClick = list => {
-    setCurrentList(list.id);
+    axios
+      .get(URL + "/api/Lists/" + list.id)
+      .then(function(response) {
+        setCurrentList(list.id);
+        setCurrentListData(response.data);
+      })
+      .catch(function(error) {
+        // handle error
+        console.log(error);
+      });
   };
 
   const handleAddNewListClick = () => {
@@ -63,9 +72,6 @@ function App() {
       .catch(function(error) {
         // handle error
         console.log(error);
-      })
-      .finally(function() {
-        // always executed
       });
   };
 
@@ -76,12 +82,6 @@ function App() {
   return (
     <TitleLayout>
       <SideNav>
-        <div>
-          current list is {" "}
-          {currentList !== null
-            ? lists.find(list => list.id === currentList).listName
-            : ""}
-        </div>
         {lists.map(list => (
           <SideNavItem
             text={list.listName}
@@ -102,7 +102,17 @@ function App() {
         {newListInputValue}
       </SideNav>
       <ListContainer>
-        <CheckList title="HMMM" data={[{id: 1, listItem: "item 1", isCheck: true},{id: 2, listItem: "item 2", isCheck: true}, {id: 3, listItem: "item 3", isCheck: false}]}></CheckList>
+        <h2>
+          {currentList !== null
+            ? lists.find(list => list.id === currentList).listName
+            : ""}
+        </h2>
+        {currentListData && (
+          <CheckList
+            data={currentListData}
+            isListSelected={currentList ? true : false}
+          ></CheckList>
+        )}
       </ListContainer>
     </TitleLayout>
   );

@@ -13,18 +13,18 @@ background-color: white;
 `;
 
 const StyledText = styled.span`
-display: block;
-color: #616161;
-font-size: 1.25rem;
-padding: 1rem 4rem;
-user-select: none;
+  display: block;
+  color: #616161;
+  font-size: 1.25rem;
+  padding: 1rem 4rem;
+  user-select: none;
 `;
-export default function SideNavItem(props) {
-  const { text, onClick, id, children } = props;
 
+export default function SideNavItem(props) {
+  const { text, onClick, id, children, isSelected } = props;
 
   return (
-    <StyledSideNavItem onClick={onClick} id={id}>
+    <StyledSideNavItem onClick={onClick} id={id} isSelected={isSelected}>
       {text && <StyledText>{text}</StyledText>}
       {children}
     </StyledSideNavItem>
