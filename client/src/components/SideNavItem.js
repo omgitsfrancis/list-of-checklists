@@ -1,0 +1,32 @@
+import React from "react";
+import styled from "styled-components";
+
+const StyledSideNavItem = styled.div`
+display: flex;
+justify-content: center;
+align-items: center;
+background-color: white;
+:hover {
+    background: rgba(0,0,0,.04);
+    cursor: pointer;
+}
+`;
+
+const StyledText = styled.span`
+display: block;
+color: #616161;
+font-size: 1.25rem;
+padding: 1rem 4rem;
+user-select: none;
+`;
+export default function SideNavItem(props) {
+  const { text, onClick, id, children } = props;
+
+
+  return (
+    <StyledSideNavItem onClick={onClick} id={id}>
+      {text && <StyledText>{text}</StyledText>}
+      {children}
+    </StyledSideNavItem>
+  );
+}
