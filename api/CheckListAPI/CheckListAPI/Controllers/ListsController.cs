@@ -50,11 +50,11 @@ namespace CheckListAPI.Controllers
         // POST: api/Lists
         // body: list name
         [HttpPost]
-        public async Task<IActionResult> CreateList([FromBody] string listName)
+        public async Task<IActionResult> CreateList([FromBody] ListDto listName)
         {
             var newList = new List();
 
-            newList.ListName = listName;
+            newList.ListName = listName.ListName;
 
             _context.Lists.Add(newList);
 
