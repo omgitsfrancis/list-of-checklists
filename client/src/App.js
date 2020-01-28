@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import SideNav from "./SideNav";
-import SideNavItem from "./SideNavItem";
-import CheckList from "./List";
+import SideNav from "./components/SideNav";
+import SideNavItem from "./components/SideNavItem";
+import CheckList from "./components/List";
 
 const URL = "https://localhost:44326";
 
