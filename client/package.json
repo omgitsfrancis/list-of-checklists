@@ -17,7 +17,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "db": "docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=YourStrong!Passw0rd' -p 1433:1433 -d sql-test",
+    "server": "dotnet run --project ../api/CheckListAPI/CheckListAPI/CheckListAPI.csproj"
   },
   "eslintConfig": {
     "extends": "react-app"
