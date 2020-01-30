@@ -1,12 +1,22 @@
 import React from "react";
 import styled from "styled-components";
+import { SuccessButton } from "./Buttons";
+import Input from "./Input";
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
 `;
 
-const AddItemInput = styled.input``;
+const AddItemContainer = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+`;
+
+const AddListItemInput = styled(Input)`
+  margin: 1rem;
+`
 
 export default function CheckList(props) {
   const {
@@ -32,7 +42,12 @@ export default function CheckList(props) {
           </li>
         ))}
       </ul>
-      { isListSelected && <AddItemInput placeholder="Add Item"></AddItemInput>}
+      {isListSelected && (
+        <AddItemContainer>
+          <AddListItemInput placeholder="Add Item"></AddListItemInput>
+          <SuccessButton onClick={() => alert("TODO: Add list items")}>Add</SuccessButton>
+        </AddItemContainer>
+      )}
     </Container>
   );
 }

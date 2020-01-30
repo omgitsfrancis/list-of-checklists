@@ -3,7 +3,9 @@ import styled from "styled-components";
 import axios from "axios";
 import SideNav from "./components/SideNav";
 import SideNavItem from "./components/SideNavItem";
-import CheckList from "./components/List";
+import CheckList from "./components/CheckList";
+import Input from "./components/Input";
+import { SuccessButton, DangerButton } from "./components/Buttons";
 
 const URL = "https://localhost:44326";
 
@@ -12,14 +14,29 @@ const TitleLayout = styled.div`
   flex-direction: row;
 `;
 
-const AddNewListInput = styled.input`
-  align-self: center;
-  margin: 1rem 0;
+const ListContainer = styled.div`
+  width: 70%;
+  margin: 0 2rem;
 `;
 
-const ListContainer = styled.div`
-  border: solid 2px red;
-  width: 70%;
+const ListHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const HeaderText = styled.h2`
+  margin-right: 1rem;
+`
+
+const AddListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const AddNewListInput = styled(Input)`
+  margin: 1rem;
 `;
 
 function App() {
@@ -79,6 +96,12 @@ function App() {
     setNewListInputValue(event.target.value);
   };
 
+  const handleNewListInputOnKeyDown = event => {
+    if (event.key === "Enter" && newListInputValue.length > 0) {
+      handleAddNewListClick();
+    }
+  };
+
   return (
     <TitleLayout>
       <SideNav>
@@ -87,31 +110,40 @@ function App() {
             text={list.listName}
             key={list.id}
             onClick={() => handleSideNavItemClick(list)}
+            isSelected={list.id === currentList}
           />
         ))}
-        <SideNavItem>
+        <AddListContainer>
           <AddNewListInput
+            maxLength={20}
             value={newListInputValue}
             onChange={handleNewListInputOnChange}
+            onKeyDown={handleNewListInputOnKeyDown}
             placeholder="Add New List"
           ></AddNewListInput>
           {newListInputValue.length > 0 && (
-            <button onClick={() => handleAddNewListClick()}>+</button>
+            <SuccessButton onClick={() => handleAddNewListClick()}>
+              Add
+            </SuccessButton>
           )}
-        </SideNavItem>
-        {newListInputValue}
+        </AddListContainer>
       </SideNav>
       <ListContainer>
-        <h2>
-          {currentList !== null
-            ? lists.find(list => list.id === currentList).listName
-            : ""}
-        </h2>
-        {currentListData && (
-          <CheckList
-            data={currentListData}
-            isListSelected={currentList ? true : false}
-          ></CheckList>
+        {currentList !== null ? (
+          <>
+            <ListHeader>
+              <HeaderText>{lists.find(list => list.id === currentList).listName}</HeaderText>
+              <DangerButton onClick={() => alert("TODO: Delete this list")}>Delete</DangerButton>
+            </ListHeader>
+            {currentListData && (
+              <CheckList
+                data={currentListData}
+                isListSelected={currentList ? true : false}
+              ></CheckList>
+            )}
+          </>
+        ) : (
+          <h2>Please select a list</h2>
         )}
       </ListContainer>
     </TitleLayout>
