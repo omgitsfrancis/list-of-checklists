@@ -8,6 +8,10 @@ const Button = styled.button`
     height: 2rem;
 `
 
+export const PrimaryButton = styled(Button)`
+    background-color: #007bff;
+`
+
 export const SuccessButton = styled(Button)`
     background-color: #28a745;
 `
@@ -15,4 +19,3 @@ export const SuccessButton = styled(Button)`
 export const DangerButton = styled(Button)`
     background-color: #dc3545;
 `
-
