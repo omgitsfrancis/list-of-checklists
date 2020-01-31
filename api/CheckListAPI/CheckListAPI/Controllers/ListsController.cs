@@ -66,7 +66,7 @@ namespace CheckListAPI.Controllers
         // DELETE: api/Lists
         // body: id
         [HttpDelete]
-        public async Task<IActionResult> DeleteList([FromBody] int id)
+        public async Task<IActionResult> DeleteList([FromQuery] int id)
         {
             if (!ModelState.IsValid)
             {
