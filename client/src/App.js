@@ -6,6 +6,7 @@ import SideNavItem from "./components/SideNavItem";
 import CheckList from "./components/CheckList";
 import Input from "./components/Input";
 import { SuccessButton, DangerButton } from "./components/Buttons";
+import { ConfirmationModal } from "./components/Modal";
 
 const URL = "https://localhost:44326";
 
@@ -42,10 +43,11 @@ const AddNewListInput = styled(Input)`
 function App() {
   const [lists, setLists] = useState([]);
   const [currentList, setCurrentList] = useState(
-    lists.length > 0 ? lists[0] : null
+    lists.length > 0 ? lists[0].id : null
   );
   const [currentListData, setCurrentListData] = useState([]);
   const [newListInputValue, setNewListInputValue] = useState("");
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     axios
@@ -102,6 +104,26 @@ function App() {
     }
   };
 
+  const handleConfirmDeleteList = () => {
+    var listToDelete = currentList
+    var deleteIndex = lists.map(function(list){ return list.id}).indexOf(listToDelete)  
+    setLists(lists.filter(list => list !== lists[deleteIndex]))
+
+    // TODO: Wire to DB
+
+    // axios
+    //   .delete(URL + "/api/Lists", {params: {id: deleteThis}})
+    //   .then(function(response) {
+    //   })
+    //   .catch(function(error) {
+    //     console.log(error);
+    //   });
+
+
+
+    setShowModal(false);
+  }
+
   return (
     <TitleLayout>
       <SideNav>
@@ -132,8 +154,8 @@ function App() {
         {currentList !== null ? (
           <>
             <ListHeader>
-              <HeaderText>{lists.find(list => list.id === currentList).listName}</HeaderText>
-              <DangerButton onClick={() => alert("TODO: Delete this list")}>Delete</DangerButton>
+        <HeaderText>{/*lists.find(list => list.id === currentList).listName */ currentList}</HeaderText>
+              <DangerButton onClick={() => setShowModal(true)}>Delete</DangerButton>
             </ListHeader>
             {currentListData && (
               <CheckList
@@ -146,6 +168,7 @@ function App() {
           <h2>Please select a list</h2>
         )}
       </ListContainer>
+      <ConfirmationModal showModal={showModal} title="Delete List" text="Are you sure?" onNoClick={() => setShowModal(false)} onYesClick = {handleConfirmDeleteList} />
     </TitleLayout>
   );
 }
