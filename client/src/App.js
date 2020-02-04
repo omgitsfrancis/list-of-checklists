@@ -28,7 +28,7 @@ const ListHeader = styled.div`
 
 const HeaderText = styled.h2`
   margin-right: 1rem;
-`
+`;
 
 const AddListContainer = styled.div`
   display: flex;
@@ -47,7 +47,8 @@ function App() {
   );
   const [currentListData, setCurrentListData] = useState([]);
   const [newListInputValue, setNewListInputValue] = useState("");
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false);
+  const [newItemInputValue, setNewItemInputValue] = useState("");
 
   useEffect(() => {
     axios
@@ -67,16 +68,19 @@ function App() {
   }, []);
 
   const handleSideNavItemClick = list => {
-    axios
-      .get(URL + "/api/Lists/" + list.id)
-      .then(function(response) {
-        setCurrentList(list.id);
-        setCurrentListData(response.data);
-      })
-      .catch(function(error) {
-        // handle error
-        console.log(error);
-      });
+    if (list.id != currentList) {
+      axios
+        .get(URL + "/api/Lists/" + list.id)
+        .then(function(response) {
+          setCurrentList(list.id);
+          setCurrentListData(response.data);
+          setNewItemInputValue("");
+        })
+        .catch(function(error) {
+          // handle error
+          console.log(error);
+        });
+    }
   };
 
   const handleAddNewListClick = () => {
@@ -105,20 +109,52 @@ function App() {
   };
 
   const handleConfirmDeleteList = () => {
-    var listToDelete = currentList
-    var deleteIndex = lists.map(function(list){ return list.id}).indexOf(listToDelete)  
-    setLists(lists.filter(list => list !== lists[deleteIndex]))
-    setCurrentList(null)
+    var listToDelete = currentList;
+    var deleteIndex = lists
+      .map(function(list) {
+        return list.id;
+      })
+      .indexOf(listToDelete);
+    setLists(lists.filter(list => list !== lists[deleteIndex]));
+    setCurrentList(null);
 
     axios
-      .delete(URL + "/api/Lists", {params: {id: listToDelete}})
+      .delete(URL + "/api/Lists", { params: { id: listToDelete } })
+      .then(function(response) {})
+      .catch(function(error) {
+        console.log(error);
+      });
+
+    setShowModal(false);
+  };
+
+  const handleNewItemInputOnChange = event => {
+    setNewItemInputValue(event.target.value);
+  };
+
+  const handleNewItemButtonOnClick = () => {
+    axios
+      .post(URL + "/api/ListItems/", {
+        listId: currentList,
+        contents: newItemInputValue
+      })
       .then(function(response) {
+        setNewItemInputValue("");
+        axios
+          .get(URL + "/api/Lists/" + currentList)
+          .then(function(response) {
+            setCurrentListData(response.data);
+          })
       })
       .catch(function(error) {
         console.log(error);
       });
-      
-    setShowModal(false);
+  };
+
+  const handleNewItemInputOnKeyDown = (event) => {
+    if (event.key === "Enter" && newItemInputValue.length > 0) {
+      handleNewItemButtonOnClick();
+    }
   }
 
   return (
@@ -151,11 +187,21 @@ function App() {
         {currentList !== null ? (
           <>
             <ListHeader>
-        <HeaderText>{/*lists.find(list => list.id === currentList).listName */ currentList}</HeaderText>
-              <DangerButton onClick={() => setShowModal(true)}>Delete</DangerButton>
+              <HeaderText>
+                {
+                  /*lists.find(list => list.id === currentList).listName */ currentList
+                }
+              </HeaderText>
+              <DangerButton onClick={() => setShowModal(true)}>
+                Delete
+              </DangerButton>
             </ListHeader>
             {currentListData && (
               <CheckList
+                newItemInputValue={newItemInputValue}
+                newItemInputOnKeyDown={handleNewItemInputOnKeyDown}
+                newItemInputOnChange={handleNewItemInputOnChange}
+                newItemButtonOnClick={handleNewItemButtonOnClick}
                 data={currentListData}
                 isListSelected={currentList ? true : false}
               ></CheckList>
@@ -165,7 +211,13 @@ function App() {
           <h2>Please select a list</h2>
         )}
       </ListContainer>
-      <ConfirmationModal showModal={showModal} title="Delete List" text="Are you sure?" onNoClick={() => setShowModal(false)} onYesClick = {handleConfirmDeleteList} />
+      <ConfirmationModal
+        showModal={showModal}
+        title="Delete List"
+        text="Are you sure?"
+        onNoClick={() => setShowModal(false)}
+        onYesClick={handleConfirmDeleteList}
+      />
     </TitleLayout>
   );
 }

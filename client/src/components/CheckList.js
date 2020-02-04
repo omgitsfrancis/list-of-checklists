@@ -30,6 +30,10 @@ export default function CheckList(props) {
     //     }
     // ],
     isListSelected,
+    newItemInputOnChange,
+    newItemButtonOnClick,
+    newItemInputValue,
+    newItemInputOnKeyDown,
     ...rest
   } = props;
 
@@ -44,8 +48,8 @@ export default function CheckList(props) {
       </ul>
       {isListSelected && (
         <AddItemContainer>
-          <AddListItemInput placeholder="Add Item"></AddListItemInput>
-          <SuccessButton onClick={() => alert("TODO: Add list items")}>Add</SuccessButton>
+          <AddListItemInput value={newItemInputValue} onKeyDown={newItemInputOnKeyDown} onChange={newItemInputOnChange} placeholder="Add Item"></AddListItemInput>
+          <SuccessButton onClick={newItemButtonOnClick}>Add</SuccessButton>
         </AddItemContainer>
       )}
     </Container>
