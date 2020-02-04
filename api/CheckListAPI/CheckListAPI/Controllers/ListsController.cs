@@ -74,11 +74,15 @@ namespace CheckListAPI.Controllers
             }
 
             var list = await _context.Lists.FindAsync(id);
+
+            var items = await _context.ListItems.Where(x => x.ListId == id).ToListAsync();
+
             if (list == null)
             {
                 return NotFound();
             }
 
+            _context.ListItems.RemoveRange(items);
             _context.Lists.Remove(list);
             await _context.SaveChangesAsync();
 

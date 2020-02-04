@@ -108,19 +108,16 @@ function App() {
     var listToDelete = currentList
     var deleteIndex = lists.map(function(list){ return list.id}).indexOf(listToDelete)  
     setLists(lists.filter(list => list !== lists[deleteIndex]))
+    setCurrentList(null)
 
-    // TODO: Wire to DB
-
-    // axios
-    //   .delete(URL + "/api/Lists", {params: {id: deleteThis}})
-    //   .then(function(response) {
-    //   })
-    //   .catch(function(error) {
-    //     console.log(error);
-    //   });
-
-
-
+    axios
+      .delete(URL + "/api/Lists", {params: {id: listToDelete}})
+      .then(function(response) {
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+      
     setShowModal(false);
   }
 
