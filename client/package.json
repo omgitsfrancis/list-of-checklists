@@ -19,7 +19,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "db:build": "docker build -t sql-test ../db/",
-    "db": "docker build -t sql-test ../db/ && docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=YourStrong!Passw0rd' -p 1433:1433 -d sql-test",
+    "db:run": "docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=YourStrong!Passw0rd' -p 1433:1433 sql-test",
     "server": "dotnet run --project ../api/CheckListAPI/CheckListAPI/CheckListAPI.csproj"
   },
   "eslintConfig": {
