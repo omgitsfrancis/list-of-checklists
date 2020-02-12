@@ -40,23 +40,30 @@ const AddNewListInput = styled(Input)`
   margin: 1rem;
 `;
 
-const initialState = { lists: [], currentList: null, currentListData: [],  newListInputValue: "", newItemInputValue: "", showModal: false};
+const initialState = {
+  lists: [],
+  currentList: null,
+  currentListData: [],
+  newListInputValue: "",
+  newItemInputValue: "",
+  showModal: false
+};
 
 function appReducer(state, action) {
   switch (action.type) {
     case "update_lists":
       return { ...state, lists: action.data };
-    case 'set_current_list':
+    case "set_current_list":
       return { ...state, currentList: action.data };
-    case 'set_current_list_data':
+    case "set_current_list_data":
       return { ...state, currentListData: action.data };
-    case 'set_new_list_input_value': 
+    case "set_new_list_input_value":
       return { ...state, newListInputValue: action.data };
-    case 'set_new_item_input_value':
-      return { ...state, newItemInputValue: action.data }
-    case 'show_modal':
+    case "set_new_item_input_value":
+      return { ...state, newItemInputValue: action.data };
+    case "show_modal":
       return { ...state, showModal: true };
-    case 'hide_modal':
+    case "hide_modal":
       return { ...state, showModal: false };
     default:
       return state;
@@ -74,55 +81,63 @@ function App() {
     await axios
       .get(URL + "/api/Lists")
       .then(function(response) {
-        dispatch({ type: 'update_lists', data: response.data})
+        dispatch({ type: "update_lists", data: response.data });
       })
       .catch(function(error) {
         console.log(error);
       });
   }
 
-  const handleSideNavItemClick = list => {
+  async function fetchListData(list) {
     if (list.id !== state.currentList) {
-      axios
+      await axios
         .get(URL + "/api/Lists/" + list.id)
         .then(function(response) {
-          dispatch( {type: "set_current_list", data: list.id})
-          dispatch({ type: "set_current_list_data", data: response.data })
-          dispatch({ type: "set_new_item_input_value", data: "" })
+          dispatch({ type: "set_current_list_data", data: response.data });
         })
         .catch(function(error) {
           console.log(error);
         });
     }
+  }
+
+  async function addNewList(listName) {
+    await axios
+      .post(URL + "/api/Lists", { ListName: listName })
+      .then(function(response) {
+        dispatch({ type: "set_new_list_input_value", data: "" });
+        updateLists();
+        return response.data
+      })
+      .catch(function(error) {
+        return error;
+      });
+  }
+
+  const handleSideNavItemClick = list => {
+    fetchListData(list);
+    dispatch({ type: "set_current_list", data: list.id });
+    dispatch({ type: "set_new_item_input_value", data: "" });
   };
 
   const handleAddNewListClick = () => {
-    axios
-      .post(URL + "/api/Lists", { ListName: state.newListInputValue })
-      .then(function(response) {
-        console.log("add list success!");
-        updateLists();
-        dispatch({ type: 'set_new_list_input_value', data: "" })
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
+      addNewList(state.newListInputValue);
   };
 
   const handleNewListInputOnChange = event => {
-    dispatch({ type: 'set_new_list_input_value', data: event.target.value })
+    dispatch({ type: "set_new_list_input_value", data: event.target.value });
   };
 
   const handleNewListInputOnKeyDown = event => {
     if (event.key === "Enter" && state.newListInputValue.length > 0) {
-      handleAddNewListClick();
+      addNewList(state.newListInputValue);
     }
   };
 
   const handleConfirmDeleteList = () => {
     var listToDelete = state.currentList;
 
-    dispatch({ type:"set_current_list", data: null })
+    dispatch({ type: "set_current_list", data: null });
 
     axios
       .delete(URL + "/api/Lists", { params: { id: listToDelete } })
@@ -133,26 +148,27 @@ function App() {
         console.log(error);
       });
 
-    dispatch({ type: 'hide_modal' })
+    dispatch({ type: "hide_modal" });
   };
 
   const handleNewItemInputOnChange = event => {
-    dispatch({ type: "set_new_item_input_value", data: event.target.value })
-
+    dispatch({ type: "set_new_item_input_value", data: event.target.value });
   };
 
   const handleNewItemButtonOnClick = () => {
-    if(state.newItemInputValue.length > 0) {
+    if (state.newItemInputValue.length > 0) {
       axios
         .post(URL + "/api/ListItems/", {
           listId: state.currentList,
           contents: state.newItemInputValue
         })
         .then(function(response) {
-          dispatch({ type: "set_new_item_input_value", data: "" })
-          axios.get(URL + "/api/Lists/" + state.currentList).then(function(response) {
-            dispatch({ type: "set_current_list_data", data: response.data });
-          });
+          dispatch({ type: "set_new_item_input_value", data: "" });
+          axios
+            .get(URL + "/api/Lists/" + state.currentList)
+            .then(function(response) {
+              dispatch({ type: "set_current_list_data", data: response.data });
+            });
         })
         .catch(function(error) {
           console.log(error);
@@ -198,10 +214,11 @@ function App() {
             <ListHeader>
               <HeaderText>
                 {
-                  state.lists.find(list => list.id === state.currentList).listName
+                  state.lists.find(list => list.id === state.currentList)
+                    .listName
                 }
               </HeaderText>
-              <DangerButton onClick={() => dispatch({ type: 'show_modal' })}>
+              <DangerButton onClick={() => dispatch({ type: "show_modal" })}>
                 Delete
               </DangerButton>
             </ListHeader>
@@ -224,7 +241,7 @@ function App() {
         showModal={state.showModal}
         title="Delete List"
         text="Are you sure?"
-        onNoClick={() =>  dispatch({ type: 'hide_modal' })}
+        onNoClick={() => dispatch({ type: "hide_modal" })}
         onYesClick={handleConfirmDeleteList}
       />
     </TitleLayout>
