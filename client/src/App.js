@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import SideNav from "./components/SideNav";
@@ -40,44 +40,57 @@ const AddNewListInput = styled(Input)`
   margin: 1rem;
 `;
 
+const initialState = { lists: [], currentList: null, currentListData: [],  newListInputValue: "", newItemInputValue: "", showModal: false};
+
+function appReducer(state, action) {
+  switch (action.type) {
+    case "update_lists":
+      return { ...state, lists: action.data };
+    case 'set_current_list':
+      return { ...state, currentList: action.data };
+    case 'set_current_list_data':
+      return { ...state, currentListData: action.data };
+    case 'set_new_list_input_value': 
+      return { ...state, newListInputValue: action.data };
+    case 'set_new_item_input_value':
+      return { ...state, newItemInputValue: action.data }
+    case 'show_modal':
+      return { ...state, showModal: true };
+    case 'hide_modal':
+      return { ...state, showModal: false };
+    default:
+      return state;
+  }
+}
+
 function App() {
-  const [lists, setLists] = useState([]);
-  const [currentList, setCurrentList] = useState(
-    lists.length > 0 ? lists[0].id : null
-  );
-  const [currentListData, setCurrentListData] = useState([]);
-  const [newListInputValue, setNewListInputValue] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [newItemInputValue, setNewItemInputValue] = useState("");
+  const [state, dispatch] = useReducer(appReducer, initialState);
 
   useEffect(() => {
-    axios
-      .get(URL + "/api/Lists")
-      .then(function(response) {
-        // handle success
-        // console.log(response.data);
-        setLists(response.data);
-      })
-      .catch(function(error) {
-        // handle error
-        console.log(error);
-      })
-      .finally(function() {
-        // always executed
-      });
+    updateLists();
   }, []);
 
+  async function updateLists() {
+    await axios
+      .get(URL + "/api/Lists")
+      .then(function(response) {
+        dispatch({ type: 'update_lists', data: response.data})
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  }
+
   const handleSideNavItemClick = list => {
-    if (list.id != currentList) {
+    if (list.id !== state.currentList) {
       axios
         .get(URL + "/api/Lists/" + list.id)
         .then(function(response) {
-          setCurrentList(list.id);
-          setCurrentListData(response.data);
-          setNewItemInputValue("");
+          dispatch( {type: "set_current_list", data: list.id})
+          dispatch({ type: "set_current_list_data", data: response.data })
+          dispatch({ type: "set_new_item_input_value", data: "" })
         })
         .catch(function(error) {
-          // handle error
           console.log(error);
         });
     }
@@ -85,98 +98,94 @@ function App() {
 
   const handleAddNewListClick = () => {
     axios
-      .post(URL + "/api/Lists", { ListName: newListInputValue })
+      .post(URL + "/api/Lists", { ListName: state.newListInputValue })
       .then(function(response) {
-        // handle success
         console.log("add list success!");
-        setLists([...lists, response.data]);
-        setNewListInputValue("");
+        updateLists();
+        dispatch({ type: 'set_new_list_input_value', data: "" })
       })
       .catch(function(error) {
-        // handle error
         console.log(error);
       });
   };
 
   const handleNewListInputOnChange = event => {
-    setNewListInputValue(event.target.value);
+    dispatch({ type: 'set_new_list_input_value', data: event.target.value })
   };
 
   const handleNewListInputOnKeyDown = event => {
-    if (event.key === "Enter" && newListInputValue.length > 0) {
+    if (event.key === "Enter" && state.newListInputValue.length > 0) {
       handleAddNewListClick();
     }
   };
 
   const handleConfirmDeleteList = () => {
-    var listToDelete = currentList;
-    var deleteIndex = lists
-      .map(function(list) {
-        return list.id;
-      })
-      .indexOf(listToDelete);
-    setLists(lists.filter(list => list !== lists[deleteIndex]));
-    setCurrentList(null);
+    var listToDelete = state.currentList;
+
+    dispatch({ type:"set_current_list", data: null })
 
     axios
       .delete(URL + "/api/Lists", { params: { id: listToDelete } })
-      .then(function(response) {})
+      .then(function(response) {
+        updateLists();
+      })
       .catch(function(error) {
         console.log(error);
       });
 
-    setShowModal(false);
+    dispatch({ type: 'hide_modal' })
   };
 
   const handleNewItemInputOnChange = event => {
-    setNewItemInputValue(event.target.value);
+    dispatch({ type: "set_new_item_input_value", data: event.target.value })
+
   };
 
   const handleNewItemButtonOnClick = () => {
-    axios
-      .post(URL + "/api/ListItems/", {
-        listId: currentList,
-        contents: newItemInputValue
-      })
-      .then(function(response) {
-        setNewItemInputValue("");
-        axios
-          .get(URL + "/api/Lists/" + currentList)
-          .then(function(response) {
-            setCurrentListData(response.data);
-          })
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
+    if(state.newItemInputValue.length > 0) {
+      axios
+        .post(URL + "/api/ListItems/", {
+          listId: state.currentList,
+          contents: state.newItemInputValue
+        })
+        .then(function(response) {
+          dispatch({ type: "set_new_item_input_value", data: "" })
+          axios.get(URL + "/api/Lists/" + state.currentList).then(function(response) {
+            dispatch({ type: "set_current_list_data", data: response.data });
+          });
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    }
   };
 
-  const handleNewItemInputOnKeyDown = (event) => {
-    if (event.key === "Enter" && newItemInputValue.length > 0) {
+  const handleNewItemInputOnKeyDown = event => {
+    if (event.key === "Enter" && state.newItemInputValue.length > 0) {
       handleNewItemButtonOnClick();
     }
-  }
+  };
 
   return (
     <TitleLayout>
       <SideNav>
-        {lists.map(list => (
+        {state.lists.map(list => (
           <SideNavItem
             text={list.listName}
             key={list.id}
             onClick={() => handleSideNavItemClick(list)}
-            isSelected={list.id === currentList}
+            isSelected={list.id === state.currentList}
           />
         ))}
         <AddListContainer>
           <AddNewListInput
             maxLength={20}
-            value={newListInputValue}
+            value={state.newListInputValue}
             onChange={handleNewListInputOnChange}
             onKeyDown={handleNewListInputOnKeyDown}
             placeholder="Add New List"
           ></AddNewListInput>
-          {newListInputValue.length > 0 && (
+          {state.newListInputValue.length > 0 && (
             <SuccessButton onClick={() => handleAddNewListClick()}>
               Add
             </SuccessButton>
@@ -184,26 +193,26 @@ function App() {
         </AddListContainer>
       </SideNav>
       <ListContainer>
-        {currentList !== null ? (
+        {state.currentList !== null ? (
           <>
             <ListHeader>
               <HeaderText>
                 {
-                  /*lists.find(list => list.id === currentList).listName */ currentList
+                  state.lists.find(list => list.id === state.currentList).listName
                 }
               </HeaderText>
-              <DangerButton onClick={() => setShowModal(true)}>
+              <DangerButton onClick={() => dispatch({ type: 'show_modal' })}>
                 Delete
               </DangerButton>
             </ListHeader>
-            {currentListData && (
+            {state.currentListData && (
               <CheckList
-                newItemInputValue={newItemInputValue}
+                newItemInputValue={state.newItemInputValue}
                 newItemInputOnKeyDown={handleNewItemInputOnKeyDown}
                 newItemInputOnChange={handleNewItemInputOnChange}
                 newItemButtonOnClick={handleNewItemButtonOnClick}
-                data={currentListData}
-                isListSelected={currentList ? true : false}
+                data={state.currentListData}
+                isListSelected={state.currentList ? true : false}
               ></CheckList>
             )}
           </>
@@ -212,10 +221,10 @@ function App() {
         )}
       </ListContainer>
       <ConfirmationModal
-        showModal={showModal}
+        showModal={state.showModal}
         title="Delete List"
         text="Are you sure?"
-        onNoClick={() => setShowModal(false)}
+        onNoClick={() =>  dispatch({ type: 'hide_modal' })}
         onYesClick={handleConfirmDeleteList}
       />
     </TitleLayout>
