@@ -8,7 +8,7 @@ align-items: center;
 background-color: white;
 background: ${props => props.isSelected && 'rgba(0,0,0,.08)'};
 :hover {
-    background: rgba(0,0,0,.04);
+    background: rgba(0,0,0,.08);
     cursor: pointer;
 }
 `;
