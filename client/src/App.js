@@ -84,7 +84,7 @@ function App() {
         dispatch({ type: "update_lists", data: response.data });
       })
       .catch(function(error) {
-        console.log(error);
+        dispatch({ type: "update_lists", data: null })
       });
   }
 
@@ -181,6 +181,10 @@ function App() {
       handleNewItemButtonOnClick();
     }
   };
+
+  if(state.lists === null) {
+    return <span>Error has occurred. Check connection to Server and DB.</span>
+  }
 
   return (
     <TitleLayout>
