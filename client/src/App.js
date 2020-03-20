@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useEffect, useReducer } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import SideNav from "./components/SideNav";
@@ -7,8 +7,6 @@ import CheckList from "./components/CheckList";
 import Input from "./components/Input";
 import { SuccessButton, DangerButton } from "./components/Buttons";
 import { ConfirmationModal } from "./components/Modal";
-
-const URL = "https://localhost:44326";
 
 const TitleLayout = styled.div`
   display: flex;

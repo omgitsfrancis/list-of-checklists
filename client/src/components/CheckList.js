@@ -47,7 +47,7 @@ export default function CheckList(props) {
 
   return (
     <Container>
-      <ul>
+      <ul {...rest}>
         {data.map(item => (
           <ListItemWrapper key={item.id}>
             <DangerButton id={item.id} onClick={deleteItemOnClick}>Delete</DangerButton>

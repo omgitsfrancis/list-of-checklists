@@ -53,7 +53,7 @@ export function ConfirmationModal(props) {
     <>
       {showModal && (
         <Backdrop>
-          <ModalContainer>
+          <ModalContainer {...rest}>
             <ModalTitle>{title}</ModalTitle>
             <ModalText>{text}</ModalText>
             <ButtonContainer>
