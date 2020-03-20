@@ -79,35 +79,33 @@ function App() {
 
   async function updateLists() {
     await axios
-      .get(URL + "/api/Lists")
+      .get(process.env.REACT_APP_URL + "/api/Lists")
       .then(function(response) {
         dispatch({ type: "update_lists", data: response.data });
       })
       .catch(function(error) {
-        dispatch({ type: "update_lists", data: null })
+        dispatch({ type: "update_lists", data: null });
       });
   }
 
   async function fetchListData(list) {
-    if (list.id !== state.currentList) {
-      await axios
-        .get(URL + "/api/Lists/" + list.id)
-        .then(function(response) {
-          dispatch({ type: "set_current_list_data", data: response.data });
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
-    }
+    await axios
+      .get(process.env.REACT_APP_URL + "/api/Lists/" + list.id)
+      .then(function(response) {
+        dispatch({ type: "set_current_list_data", data: response.data });
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
   }
 
   async function addNewList(listName) {
     await axios
-      .post(URL + "/api/Lists", { ListName: listName })
+      .post(process.env.REACT_APP_URL + "/api/Lists", { ListName: listName })
       .then(function(response) {
         dispatch({ type: "set_new_list_input_value", data: "" });
         updateLists();
-        return response.data
+        return response.data;
       })
       .catch(function(error) {
         return error;
@@ -121,7 +119,7 @@ function App() {
   };
 
   const handleAddNewListClick = () => {
-      addNewList(state.newListInputValue);
+    addNewList(state.newListInputValue);
   };
 
   const handleNewListInputOnChange = event => {
@@ -140,7 +138,9 @@ function App() {
     dispatch({ type: "set_current_list", data: null });
 
     axios
-      .delete(URL + "/api/Lists", { params: { id: listToDelete } })
+      .delete(process.env.REACT_APP_URL + "/api/Lists", {
+        params: { id: listToDelete }
+      })
       .then(function(response) {
         updateLists();
       })
@@ -158,14 +158,14 @@ function App() {
   const handleNewItemButtonOnClick = () => {
     if (state.newItemInputValue.length > 0) {
       axios
-        .post(URL + "/api/ListItems/", {
+        .post(process.env.REACT_APP_URL + "/api/ListItems/", {
           listId: state.currentList,
           contents: state.newItemInputValue
         })
         .then(function(response) {
           dispatch({ type: "set_new_item_input_value", data: "" });
           axios
-            .get(URL + "/api/Lists/" + state.currentList)
+            .get(process.env.REACT_APP_URL + "/api/Lists/" + state.currentList)
             .then(function(response) {
               dispatch({ type: "set_current_list_data", data: response.data });
             });
@@ -182,8 +182,19 @@ function App() {
     }
   };
 
-  if(state.lists === null) {
-    return <span>Error has occurred. Check connection to Server and DB.</span>
+  const handleDeleteItemOnClick = event => {
+    axios
+      .delete(process.env.REACT_APP_URL + "/api/ListItems/" + event.target.id)
+      .then(function(response) {
+        fetchListData({ id: state.currentList });
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  };
+
+  if (state.lists === null) {
+    return <span>Error has occurred. Check connection to Server and DB.</span>;
   }
 
   return (
@@ -232,6 +243,7 @@ function App() {
                 newItemInputOnKeyDown={handleNewItemInputOnKeyDown}
                 newItemInputOnChange={handleNewItemInputOnChange}
                 newItemButtonOnClick={handleNewItemButtonOnClick}
+                deleteItemOnClick={handleDeleteItemOnClick}
                 data={state.currentListData}
                 isListSelected={state.currentList ? true : false}
               ></CheckList>
